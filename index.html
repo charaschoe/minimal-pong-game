@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PONG</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Crimson+Pro:wght@300;400;500&display=swap');
         
         * {
             margin: 0;
@@ -14,27 +14,68 @@
         }
         
         body {
-            background: #F8F8F8;
+            background: #F4F2F0;
             font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #1A1A1A;
+            color: #2A2926;
+            position: relative;
+        }
+        
+        /* Nordic-inspired background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 40%, rgba(200, 185, 165, 0.03) 50%, transparent 60%),
+                        linear-gradient(-45deg, transparent 40%, rgba(156, 134, 118, 0.02) 50%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         #gameContainer {
             position: relative;
-            background: #FFFFFF;
-            border: 1px solid #E0E0E0;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            background: #FEFEFE;
+            border: 2px solid #E8E3DD;
+            box-shadow: 0 8px 32px rgba(42, 41, 38, 0.12);
             max-width: 90vmin;
             aspect-ratio: 2/1;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        /* Nordic quatrefoil corner accents */
+        #gameContainer::before,
+        #gameContainer::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #C8B9A5;
+            opacity: 0.6;
+            z-index: 2;
+        }
+        
+        #gameContainer::before {
+            top: 16px;
+            left: 16px;
+            clip-path: circle(50% at 50% 50%);
+        }
+        
+        #gameContainer::after {
+            bottom: 16px;
+            right: 16px;
+            clip-path: circle(50% at 50% 50%);
         }
         
         #gameCanvas {
             display: block;
-            background: #FFFFFF;
+            background: #FEFEFE;
             width: 100%;
             height: 100%;
         }
@@ -45,7 +86,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #FFFFFF;
+            background: linear-gradient(135deg, #FEFEFE 0%, #F9F7F5 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -59,12 +100,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(254, 254, 254, 0.96);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
+            backdrop-filter: blur(4px);
         }
         
         #pauseScreen {
@@ -73,53 +115,88 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(254, 254, 254, 0.94);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
+            backdrop-filter: blur(6px);
         }
         
         #title {
-            font-size: 3rem;
+            font-family: 'Crimson Pro', serif;
+            font-size: 3.5rem;
             font-weight: 300;
-            color: #1A1A1A;
+            color: #2A2926;
             margin-bottom: 3rem;
-            letter-spacing: 0.5rem;
+            letter-spacing: 0.4rem;
+            position: relative;
+        }
+        
+        /* Nordic-inspired title accent */
+        #title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #C8B9A5, #9C8676);
         }
         
         .game-button {
-            background: #1A1A1A;
-            color: #FFFFFF;
+            background: #2A2926;
+            color: #FEFEFE;
             border: none;
-            padding: 1rem 2rem;
+            padding: 1rem 2.5rem;
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
             font-weight: 400;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
             text-transform: uppercase;
             letter-spacing: 0.1rem;
-            margin: 0.5rem;
+            margin: 0.6rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(200, 185, 165, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .game-button:hover::before {
+            left: 100%;
         }
         
         .game-button:hover {
-            background: #333333;
+            background: #3A3935;
+            box-shadow: 0 4px 16px rgba(42, 41, 38, 0.2);
         }
         
         .game-button:active {
-            background: #000000;
+            background: #1A1918;
+            transform: translateY(1px);
         }
         
         .game-button.secondary {
             background: transparent;
-            color: #1A1A1A;
-            border: 1px solid #E0E0E0;
+            color: #2A2926;
+            border: 2px solid #E8E3DD;
         }
         
         .game-button.secondary:hover {
-            background: #F8F8F8;
+            background: #F9F7F5;
+            border-color: #C8B9A5;
         }
         
         #scoreDisplay {
@@ -127,22 +204,27 @@
             top: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 2rem;
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
             font-weight: 300;
-            color: #1A1A1A;
+            color: #2A2926;
             z-index: 5;
-            letter-spacing: 0.2rem;
+            letter-spacing: 0.3rem;
         }
         
         #gameStats {
             position: absolute;
             bottom: 2rem;
             left: 2rem;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 300;
-            color: #666666;
+            color: #6B6762;
             letter-spacing: 0.05rem;
-            line-height: 1.4;
+            line-height: 1.5;
+            background: rgba(249, 247, 245, 0.8);
+            padding: 0.8rem 1rem;
+            border-radius: 2px;
+            backdrop-filter: blur(4px);
         }
         
         #instructions {
@@ -150,25 +232,31 @@
             bottom: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 300;
-            color: #666666;
+            color: #6B6762;
             text-align: center;
             letter-spacing: 0.05rem;
-            line-height: 1.4;
+            line-height: 1.5;
+            background: rgba(249, 247, 245, 0.7);
+            padding: 1rem 1.5rem;
+            border-radius: 2px;
+            backdrop-filter: blur(4px);
         }
         
         #gameMode {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             text-align: center;
         }
         
         #winner {
-            font-size: 2rem;
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
             font-weight: 300;
-            color: #1A1A1A;
-            margin-bottom: 2rem;
+            color: #2A2926;
+            margin-bottom: 2.5rem;
             letter-spacing: 0.2rem;
+            text-align: center;
         }
         
         .hidden {
@@ -176,19 +264,57 @@
         }
         
         .option-group {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         
         .option-label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 400;
-            color: #666666;
-            margin-bottom: 1rem;
+            color: #6B6762;
+            margin-bottom: 1.2rem;
             letter-spacing: 0.05rem;
+            text-transform: uppercase;
+        }
+        
+        /* Nordic-inspired decorative elements */
+        .nordic-accent {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #C8B9A5;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        .nordic-accent:nth-child(1) {
+            top: 10%;
+            left: 15%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .nordic-accent:nth-child(2) {
+            top: 20%;
+            right: 20%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        .nordic-accent:nth-child(3) {
+            bottom: 15%;
+            left: 25%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(180deg); }
         }
     </style>
 </head>
 <body>
+    <div class="nordic-accent"></div>
+    <div class="nordic-accent"></div>
+    <div class="nordic-accent"></div>
+    
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="scoreDisplay">0 — 0</div>
@@ -243,12 +369,14 @@
                 this.rallyDisplay = document.getElementById('rallyDisplay');
                 this.winnerDisplay = document.getElementById('winner');
                 
-                // Minimalist color palette
+                // Nordic-inspired color palette
                 this.colors = {
-                    primary: '#1A1A1A',
-                    secondary: '#666666',
-                    background: '#FFFFFF',
-                    accent: '#E0E0E0'
+                    primary: '#2A2926',
+                    secondary: '#6B6762',
+                    background: '#FEFEFE',
+                    accent: '#C8B9A5',
+                    warm: '#9C8676',
+                    light: '#F9F7F5'
                 };
                 
                 this.gameState = 'start';
@@ -310,16 +438,16 @@
                 this.leftPaddle = {
                     x: 40,
                     y: 180,
-                    width: 4,
+                    width: 5,
                     height: 40,
                     color: this.colors.primary,
                     score: 0
                 };
                 
                 this.rightPaddle = {
-                    x: 756,
+                    x: 755,
                     y: 180,
-                    width: 4,
+                    width: 5,
                     height: 40,
                     color: this.colors.primary,
                     score: 0
@@ -636,7 +764,8 @@
                         vx: (Math.random() - 0.5) * 4,
                         vy: (Math.random() - 0.5) * 4,
                         life: 30,
-                        maxLife: 30
+                        maxLife: 30,
+                        type: Math.random() > 0.5 ? 'warm' : 'accent' // Randomize particle type
                     });
                 }
             }
@@ -666,30 +795,59 @@
             }
             
             render() {
-                // Clear canvas
+                // Clear canvas with Nordic-inspired background
                 this.ctx.fillStyle = this.flashColor || this.colors.background;
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                // Draw center line (minimal)
-                this.ctx.fillStyle = this.colors.accent;
-                this.ctx.fillRect(399, 0, 2, this.canvas.height);
+                // Draw subtle Nordic pattern
+                this.ctx.strokeStyle = this.colors.accent;
+                this.ctx.globalAlpha = 0.08;
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i < this.canvas.width; i += 60) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(i, 0);
+                    this.ctx.lineTo(i + 30, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                this.ctx.globalAlpha = 1;
                 
-                // Draw paddles (clean rectangles)
+                // Draw center line with Nordic accent
+                this.ctx.fillStyle = this.colors.accent;
+                this.ctx.fillRect(398, 0, 4, this.canvas.height);
+                
+                // Add center circle accent
+                this.ctx.strokeStyle = this.colors.accent;
+                this.ctx.lineWidth = 2;
+                this.ctx.globalAlpha = 0.6;
+                this.ctx.beginPath();
+                this.ctx.arc(400, 200, 30, 0, Math.PI * 2);
+                this.ctx.stroke();
+                this.ctx.globalAlpha = 1;
+                
+                // Draw paddles with Nordic styling
                 this.drawRect(this.leftPaddle.x, this.leftPaddle.y, this.leftPaddle.width, this.leftPaddle.height, this.leftPaddle.color);
                 this.drawRect(this.rightPaddle.x, this.rightPaddle.y, this.rightPaddle.width, this.rightPaddle.height, this.rightPaddle.color);
                 
-                // Draw ball (perfect circle)
+                // Draw ball with subtle glow
                 this.ctx.fillStyle = this.ball.color;
                 this.ctx.beginPath();
                 this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
                 this.ctx.fill();
                 
-                // Draw particles
-                this.ctx.fillStyle = this.colors.secondary;
+                // Add subtle glow around ball
+                this.ctx.globalAlpha = 0.3;
+                this.ctx.fillStyle = this.colors.accent;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius + 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.globalAlpha = 1;
+                
+                // Draw particles with Nordic colors
                 this.particles.forEach(particle => {
                     const alpha = particle.life / particle.maxLife;
                     this.ctx.globalAlpha = alpha;
-                    this.ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+                    this.ctx.fillStyle = particle.type === 'warm' ? this.colors.warm : this.colors.accent;
+                    this.ctx.fillRect(particle.x - 1.5, particle.y - 1.5, 3, 3);
                 });
                 this.ctx.globalAlpha = 1;
             }
