@@ -53,6 +53,34 @@
             z-index: 10;
         }
         
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        #pauseScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
         #title {
             font-size: 3rem;
             font-weight: 300;
@@ -61,7 +89,7 @@
             letter-spacing: 0.5rem;
         }
         
-        #playButton {
+        .game-button {
             background: #1A1A1A;
             color: #FFFFFF;
             border: none;
@@ -73,14 +101,25 @@
             transition: all 0.15s ease;
             text-transform: uppercase;
             letter-spacing: 0.1rem;
+            margin: 0.5rem;
         }
         
-        #playButton:hover {
+        .game-button:hover {
             background: #333333;
         }
         
-        #playButton:active {
+        .game-button:active {
             background: #000000;
+        }
+        
+        .game-button.secondary {
+            background: transparent;
+            color: #1A1A1A;
+            border: 1px solid #E0E0E0;
+        }
+        
+        .game-button.secondary:hover {
+            background: #F8F8F8;
         }
         
         #scoreDisplay {
@@ -93,6 +132,17 @@
             color: #1A1A1A;
             z-index: 5;
             letter-spacing: 0.2rem;
+        }
+        
+        #gameStats {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: #666666;
+            letter-spacing: 0.05rem;
+            line-height: 1.4;
         }
         
         #instructions {
@@ -108,8 +158,33 @@
             line-height: 1.4;
         }
         
+        #gameMode {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        #winner {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #1A1A1A;
+            margin-bottom: 2rem;
+            letter-spacing: 0.2rem;
+        }
+        
         .hidden {
             display: none !important;
+        }
+        
+        .option-group {
+            margin-bottom: 2rem;
+        }
+        
+        .option-label {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #666666;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05rem;
         }
     </style>
 </head>
@@ -117,13 +192,41 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="scoreDisplay">0 — 0</div>
+        <div id="gameStats">
+            <div>Speed: <span id="speedDisplay">1.0x</span></div>
+            <div>Rally: <span id="rallyDisplay">0</span></div>
+        </div>
+        
         <div id="startScreen">
             <div id="title">PONG</div>
-            <button id="playButton">Play</button>
+            <div id="gameMode">
+                <div class="option-label">Game Mode</div>
+                <button class="game-button" id="twoPlayerButton">Two Player</button>
+                <button class="game-button secondary" id="aiButton">vs AI</button>
+            </div>
+            <div class="option-group">
+                <div class="option-label">First to Score</div>
+                <button class="game-button secondary" id="score5">5</button>
+                <button class="game-button" id="score10">10</button>
+                <button class="game-button secondary" id="score15">15</button>
+            </div>
             <div id="instructions">
                 Player 1: W / S<br>
-                Player 2: ↑ / ↓
+                Player 2: ↑ / ↓<br>
+                Press P to pause
             </div>
+        </div>
+        
+        <div id="pauseScreen" class="hidden">
+            <div id="title">PAUSED</div>
+            <button class="game-button" id="resumeButton">Resume</button>
+            <button class="game-button secondary" id="restartButton">Restart</button>
+        </div>
+        
+        <div id="gameOverScreen" class="hidden">
+            <div id="winner">Player 1 Wins!</div>
+            <button class="game-button" id="playAgainButton">Play Again</button>
+            <button class="game-button secondary" id="menuButton">Menu</button>
         </div>
     </div>
 
@@ -133,8 +236,12 @@
                 this.canvas = document.getElementById('gameCanvas');
                 this.ctx = this.canvas.getContext('2d');
                 this.startScreen = document.getElementById('startScreen');
-                this.playButton = document.getElementById('playButton');
+                this.pauseScreen = document.getElementById('pauseScreen');
+                this.gameOverScreen = document.getElementById('gameOverScreen');
                 this.scoreDisplay = document.getElementById('scoreDisplay');
+                this.speedDisplay = document.getElementById('speedDisplay');
+                this.rallyDisplay = document.getElementById('rallyDisplay');
+                this.winnerDisplay = document.getElementById('winner');
                 
                 // Minimalist color palette
                 this.colors = {
@@ -145,12 +252,49 @@
                 };
                 
                 this.gameState = 'start';
+                this.gameMode = 'twoPlayer'; // 'twoPlayer' or 'ai'
+                this.winningScore = 10;
                 this.keys = {};
                 this.flashColor = null;
                 this.flashTimer = 0;
+                this.particles = [];
+                this.rally = 0;
+                this.gameSpeed = 1.0;
+                this.lastBallHit = 0;
+                
+                // Sound effects (using Web Audio API)
+                this.audioContext = null;
+                this.initAudio();
                 
                 this.initGame();
                 this.bindEvents();
+            }
+            
+            initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Audio not supported');
+                }
+            }
+            
+            playSound(frequency, duration = 0.1, type = 'sine') {
+                if (!this.audioContext) return;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
             }
             
             initGame() {
@@ -181,37 +325,160 @@
                     score: 0
                 };
                 
+                this.particles = [];
+                this.rally = 0;
+                this.gameSpeed = 1.0;
                 this.resetBall();
+                this.updateDisplay();
             }
             
             resetBall() {
                 this.ball.x = 400;
                 this.ball.y = 200;
                 const angle = (Math.random() - 0.5) * Math.PI / 4;
-                const speed = 5;
+                const speed = 5 * this.gameSpeed;
                 this.ball.vx = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1);
                 this.ball.vy = Math.sin(angle) * speed;
             }
             
             bindEvents() {
-                this.playButton.addEventListener('click', () => this.startGame());
+                // Start screen buttons
+                document.getElementById('twoPlayerButton').addEventListener('click', () => {
+                    this.gameMode = 'twoPlayer';
+                    this.updateModeButtons();
+                });
+                
+                document.getElementById('aiButton').addEventListener('click', () => {
+                    this.gameMode = 'ai';
+                    this.updateModeButtons();
+                });
+                
+                // Score buttons
+                document.getElementById('score5').addEventListener('click', () => {
+                    this.winningScore = 5;
+                    this.updateScoreButtons();
+                });
+                
+                document.getElementById('score10').addEventListener('click', () => {
+                    this.winningScore = 10;
+                    this.updateScoreButtons();
+                });
+                
+                document.getElementById('score15').addEventListener('click', () => {
+                    this.winningScore = 15;
+                    this.updateScoreButtons();
+                });
+                
+                // Game control buttons
+                document.getElementById('resumeButton').addEventListener('click', () => this.resumeGame());
+                document.getElementById('restartButton').addEventListener('click', () => this.restartGame());
+                document.getElementById('playAgainButton').addEventListener('click', () => this.restartGame());
+                document.getElementById('menuButton').addEventListener('click', () => this.showMenu());
                 
                 document.addEventListener('keydown', (e) => {
                     this.keys[e.key] = true;
+                    
                     if (e.key === ' ' && this.gameState === 'start') {
                         this.startGame();
+                    }
+                    
+                    if (e.key === 'p' || e.key === 'P') {
+                        if (this.gameState === 'playing') {
+                            this.pauseGame();
+                        } else if (this.gameState === 'paused') {
+                            this.resumeGame();
+                        }
+                    }
+                    
+                    if (e.key === 'Escape') {
+                        if (this.gameState === 'paused') {
+                            this.resumeGame();
+                        }
                     }
                 });
                 
                 document.addEventListener('keyup', (e) => {
                     this.keys[e.key] = false;
                 });
+                
+                // Initialize button states
+                this.updateModeButtons();
+                this.updateScoreButtons();
+            }
+            
+            updateModeButtons() {
+                const twoPlayerBtn = document.getElementById('twoPlayerButton');
+                const aiBtn = document.getElementById('aiButton');
+                
+                if (this.gameMode === 'twoPlayer') {
+                    twoPlayerBtn.classList.remove('secondary');
+                    aiBtn.classList.add('secondary');
+                } else {
+                    twoPlayerBtn.classList.add('secondary');
+                    aiBtn.classList.remove('secondary');
+                }
+            }
+            
+            updateScoreButtons() {
+                const buttons = [
+                    { id: 'score5', value: 5 },
+                    { id: 'score10', value: 10 },
+                    { id: 'score15', value: 15 }
+                ];
+                
+                buttons.forEach(btn => {
+                    const element = document.getElementById(btn.id);
+                    if (btn.value === this.winningScore) {
+                        element.classList.remove('secondary');
+                    } else {
+                        element.classList.add('secondary');
+                    }
+                });
             }
             
             startGame() {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
                 this.gameState = 'playing';
                 this.startScreen.classList.add('hidden');
+                this.pauseScreen.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                this.initGame();
                 this.gameLoop();
+            }
+            
+            pauseGame() {
+                this.gameState = 'paused';
+                this.pauseScreen.classList.remove('hidden');
+            }
+            
+            resumeGame() {
+                this.gameState = 'playing';
+                this.pauseScreen.classList.add('hidden');
+                this.gameLoop();
+            }
+            
+            restartGame() {
+                this.initGame();
+                this.startGame();
+            }
+            
+            showMenu() {
+                this.gameState = 'start';
+                this.startScreen.classList.remove('hidden');
+                this.pauseScreen.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+            }
+            
+            gameOver(winner) {
+                this.gameState = 'gameOver';
+                this.winnerDisplay.textContent = winner === 'left' ? 
+                    (this.gameMode === 'ai' ? 'You Win!' : 'Player 1 Wins!') : 
+                    (this.gameMode === 'ai' ? 'AI Wins!' : 'Player 2 Wins!');
+                this.gameOverScreen.classList.remove('hidden');
+                this.playSound(winner === 'left' ? 523 : 330, 0.5);
             }
             
             update() {
@@ -228,12 +495,16 @@
                     this.leftPaddle.y += paddleSpeed;
                 }
                 
-                // Right paddle (Arrow keys)
-                if (this.keys['ArrowUp'] && this.rightPaddle.y > 0) {
-                    this.rightPaddle.y -= paddleSpeed;
-                }
-                if (this.keys['ArrowDown'] && this.rightPaddle.y < this.canvas.height - this.rightPaddle.height) {
-                    this.rightPaddle.y += paddleSpeed;
+                // Right paddle (Arrow keys or AI)
+                if (this.gameMode === 'ai') {
+                    this.updateAI();
+                } else {
+                    if (this.keys['ArrowUp'] && this.rightPaddle.y > 0) {
+                        this.rightPaddle.y -= paddleSpeed;
+                    }
+                    if (this.keys['ArrowDown'] && this.rightPaddle.y < this.canvas.height - this.rightPaddle.height) {
+                        this.rightPaddle.y += paddleSpeed;
+                    }
                 }
                 
                 // Ball movement
@@ -244,26 +515,60 @@
                 if (this.ball.y - this.ball.radius <= 0 || this.ball.y + this.ball.radius >= this.canvas.height) {
                     this.ball.vy = -this.ball.vy;
                     this.ball.y = Math.max(this.ball.radius, Math.min(this.canvas.height - this.ball.radius, this.ball.y));
+                    this.playSound(800, 0.05);
+                    this.createParticles(this.ball.x, this.ball.y, 3);
                 }
                 
                 // Ball collision with paddles
-                this.checkPaddleCollision(this.leftPaddle);
-                this.checkPaddleCollision(this.rightPaddle);
+                if (this.checkPaddleCollision(this.leftPaddle) || this.checkPaddleCollision(this.rightPaddle)) {
+                    this.rally++;
+                    this.lastBallHit = Date.now();
+                    
+                    // Increase speed slightly after long rallies
+                    if (this.rally % 5 === 0) {
+                        this.gameSpeed = Math.min(2.0, this.gameSpeed + 0.1);
+                        const currentSpeed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+                        const speedMultiplier = this.gameSpeed / (this.gameSpeed - 0.1);
+                        this.ball.vx *= speedMultiplier;
+                        this.ball.vy *= speedMultiplier;
+                    }
+                    
+                    this.updateDisplay();
+                }
                 
                 // Scoring
                 if (this.ball.x < 0) {
                     this.rightPaddle.score++;
                     this.flash(this.colors.accent);
+                    this.playSound(440, 0.2);
+                    this.createParticles(50, this.ball.y, 8);
+                    this.resetRally();
                     this.resetBall();
-                    this.updateScore();
+                    this.updateDisplay();
+                    
+                    if (this.rightPaddle.score >= this.winningScore) {
+                        this.gameOver('right');
+                        return;
+                    }
                 }
                 
                 if (this.ball.x > this.canvas.width) {
                     this.leftPaddle.score++;
                     this.flash(this.colors.accent);
+                    this.playSound(440, 0.2);
+                    this.createParticles(750, this.ball.y, 8);
+                    this.resetRally();
                     this.resetBall();
-                    this.updateScore();
+                    this.updateDisplay();
+                    
+                    if (this.leftPaddle.score >= this.winningScore) {
+                        this.gameOver('left');
+                        return;
+                    }
                 }
+                
+                // Update particles
+                this.updateParticles();
                 
                 // Update flash effect
                 if (this.flashTimer > 0) {
@@ -272,6 +577,27 @@
                         this.flashColor = null;
                     }
                 }
+            }
+            
+            updateAI() {
+                const aiSpeed = 5.5; // Slightly slower than human for balanced gameplay
+                const paddleCenter = this.rightPaddle.y + this.rightPaddle.height / 2;
+                const ballCenter = this.ball.y;
+                const distance = ballCenter - paddleCenter;
+                
+                // Only move if ball is coming towards AI and distance is significant
+                if (this.ball.vx > 0 && Math.abs(distance) > 5) {
+                    if (distance > 0 && this.rightPaddle.y < this.canvas.height - this.rightPaddle.height) {
+                        this.rightPaddle.y += aiSpeed;
+                    } else if (distance < 0 && this.rightPaddle.y > 0) {
+                        this.rightPaddle.y -= aiSpeed;
+                    }
+                }
+            }
+            
+            resetRally() {
+                this.rally = 0;
+                this.gameSpeed = 1.0;
             }
             
             checkPaddleCollision(paddle) {
@@ -294,6 +620,37 @@
                     } else {
                         this.ball.x = paddle.x - this.ball.radius;
                     }
+                    
+                    this.playSound(600, 0.05);
+                    this.createParticles(paddle.x + paddle.width/2, this.ball.y, 5);
+                    return true;
+                }
+                return false;
+            }
+            
+            createParticles(x, y, count) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: x + (Math.random() - 0.5) * 10,
+                        y: y + (Math.random() - 0.5) * 10,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4,
+                        life: 30,
+                        maxLife: 30
+                    });
+                }
+            }
+            
+            updateParticles() {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    
+                    if (particle.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
                 }
             }
             
@@ -302,8 +659,10 @@
                 this.flashTimer = 8;
             }
             
-            updateScore() {
+            updateDisplay() {
                 this.scoreDisplay.textContent = `${this.leftPaddle.score} — ${this.rightPaddle.score}`;
+                this.speedDisplay.textContent = `${this.gameSpeed.toFixed(1)}x`;
+                this.rallyDisplay.textContent = this.rally;
             }
             
             render() {
@@ -324,6 +683,15 @@
                 this.ctx.beginPath();
                 this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
                 this.ctx.fill();
+                
+                // Draw particles
+                this.ctx.fillStyle = this.colors.secondary;
+                this.particles.forEach(particle => {
+                    const alpha = particle.life / particle.maxLife;
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.fillRect(particle.x - 1, particle.y - 1, 2, 2);
+                });
+                this.ctx.globalAlpha = 1;
             }
             
             drawRect(x, y, width, height, color) {
