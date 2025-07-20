@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PONG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #F8F8F8;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #1A1A1A;
+        }
+        
+        #gameContainer {
+            position: relative;
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            max-width: 90vmin;
+            aspect-ratio: 2/1;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #FFFFFF;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        #title {
+            font-size: 3rem;
+            font-weight: 300;
+            color: #1A1A1A;
+            margin-bottom: 3rem;
+            letter-spacing: 0.5rem;
+        }
+        
+        #playButton {
+            background: #1A1A1A;
+            color: #FFFFFF;
+            border: none;
+            padding: 1rem 2rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        
+        #playButton:hover {
+            background: #333333;
+        }
+        
+        #playButton:active {
+            background: #000000;
+        }
+        
+        #scoreDisplay {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            font-weight: 300;
+            color: #1A1A1A;
+            z-index: 5;
+            letter-spacing: 0.2rem;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: #666666;
+            text-align: center;
+            letter-spacing: 0.05rem;
+            line-height: 1.4;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div id="scoreDisplay">0 — 0</div>
+        <div id="startScreen">
+            <div id="title">PONG</div>
+            <button id="playButton">Play</button>
+            <div id="instructions">
+                Player 1: W / S<br>
+                Player 2: ↑ / ↓
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MinimalPong {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.startScreen = document.getElementById('startScreen');
+                this.playButton = document.getElementById('playButton');
+                this.scoreDisplay = document.getElementById('scoreDisplay');
+                
+                // Minimalist color palette
+                this.colors = {
+                    primary: '#1A1A1A',
+                    secondary: '#666666',
+                    background: '#FFFFFF',
+                    accent: '#E0E0E0'
+                };
+                
+                this.gameState = 'start';
+                this.keys = {};
+                this.flashColor = null;
+                this.flashTimer = 0;
+                
+                this.initGame();
+                this.bindEvents();
+            }
+            
+            initGame() {
+                this.ball = {
+                    x: 400,
+                    y: 200,
+                    radius: 6,
+                    vx: 0,
+                    vy: 0,
+                    color: this.colors.primary
+                };
+                
+                this.leftPaddle = {
+                    x: 40,
+                    y: 180,
+                    width: 4,
+                    height: 40,
+                    color: this.colors.primary,
+                    score: 0
+                };
+                
+                this.rightPaddle = {
+                    x: 756,
+                    y: 180,
+                    width: 4,
+                    height: 40,
+                    color: this.colors.primary,
+                    score: 0
+                };
+                
+                this.resetBall();
+            }
+            
+            resetBall() {
+                this.ball.x = 400;
+                this.ball.y = 200;
+                const angle = (Math.random() - 0.5) * Math.PI / 4;
+                const speed = 5;
+                this.ball.vx = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1);
+                this.ball.vy = Math.sin(angle) * speed;
+            }
+            
+            bindEvents() {
+                this.playButton.addEventListener('click', () => this.startGame());
+                
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.key] = true;
+                    if (e.key === ' ' && this.gameState === 'start') {
+                        this.startGame();
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.key] = false;
+                });
+            }
+            
+            startGame() {
+                this.gameState = 'playing';
+                this.startScreen.classList.add('hidden');
+                this.gameLoop();
+            }
+            
+            update() {
+                if (this.gameState !== 'playing') return;
+                
+                // Paddle movement
+                const paddleSpeed = 7;
+                
+                // Left paddle (W/S)
+                if (this.keys['w'] && this.leftPaddle.y > 0) {
+                    this.leftPaddle.y -= paddleSpeed;
+                }
+                if (this.keys['s'] && this.leftPaddle.y < this.canvas.height - this.leftPaddle.height) {
+                    this.leftPaddle.y += paddleSpeed;
+                }
+                
+                // Right paddle (Arrow keys)
+                if (this.keys['ArrowUp'] && this.rightPaddle.y > 0) {
+                    this.rightPaddle.y -= paddleSpeed;
+                }
+                if (this.keys['ArrowDown'] && this.rightPaddle.y < this.canvas.height - this.rightPaddle.height) {
+                    this.rightPaddle.y += paddleSpeed;
+                }
+                
+                // Ball movement
+                this.ball.x += this.ball.vx;
+                this.ball.y += this.ball.vy;
+                
+                // Ball collision with top/bottom
+                if (this.ball.y - this.ball.radius <= 0 || this.ball.y + this.ball.radius >= this.canvas.height) {
+                    this.ball.vy = -this.ball.vy;
+                    this.ball.y = Math.max(this.ball.radius, Math.min(this.canvas.height - this.ball.radius, this.ball.y));
+                }
+                
+                // Ball collision with paddles
+                this.checkPaddleCollision(this.leftPaddle);
+                this.checkPaddleCollision(this.rightPaddle);
+                
+                // Scoring
+                if (this.ball.x < 0) {
+                    this.rightPaddle.score++;
+                    this.flash(this.colors.accent);
+                    this.resetBall();
+                    this.updateScore();
+                }
+                
+                if (this.ball.x > this.canvas.width) {
+                    this.leftPaddle.score++;
+                    this.flash(this.colors.accent);
+                    this.resetBall();
+                    this.updateScore();
+                }
+                
+                // Update flash effect
+                if (this.flashTimer > 0) {
+                    this.flashTimer--;
+                    if (this.flashTimer <= 0) {
+                        this.flashColor = null;
+                    }
+                }
+            }
+            
+            checkPaddleCollision(paddle) {
+                if (this.ball.x - this.ball.radius <= paddle.x + paddle.width &&
+                    this.ball.x + this.ball.radius >= paddle.x &&
+                    this.ball.y - this.ball.radius <= paddle.y + paddle.height &&
+                    this.ball.y + this.ball.radius >= paddle.y) {
+                    
+                    // Calculate hit position on paddle (0 to 1)
+                    const hitPos = (this.ball.y - paddle.y) / paddle.height;
+                    const angle = (hitPos - 0.5) * Math.PI / 3;
+                    const speed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy) * 1.02;
+                    
+                    this.ball.vx = Math.cos(angle) * speed * (paddle.x < 400 ? 1 : -1);
+                    this.ball.vy = Math.sin(angle) * speed;
+                    
+                    // Move ball out of paddle
+                    if (paddle.x < 400) {
+                        this.ball.x = paddle.x + paddle.width + this.ball.radius;
+                    } else {
+                        this.ball.x = paddle.x - this.ball.radius;
+                    }
+                }
+            }
+            
+            flash(color) {
+                this.flashColor = color;
+                this.flashTimer = 8;
+            }
+            
+            updateScore() {
+                this.scoreDisplay.textContent = `${this.leftPaddle.score} — ${this.rightPaddle.score}`;
+            }
+            
+            render() {
+                // Clear canvas
+                this.ctx.fillStyle = this.flashColor || this.colors.background;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw center line (minimal)
+                this.ctx.fillStyle = this.colors.accent;
+                this.ctx.fillRect(399, 0, 2, this.canvas.height);
+                
+                // Draw paddles (clean rectangles)
+                this.drawRect(this.leftPaddle.x, this.leftPaddle.y, this.leftPaddle.width, this.leftPaddle.height, this.leftPaddle.color);
+                this.drawRect(this.rightPaddle.x, this.rightPaddle.y, this.rightPaddle.width, this.rightPaddle.height, this.rightPaddle.color);
+                
+                // Draw ball (perfect circle)
+                this.ctx.fillStyle = this.ball.color;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            drawRect(x, y, width, height, color) {
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(x, y, width, height);
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                
+                if (this.gameState === 'playing') {
+                    requestAnimationFrame(() => this.gameLoop());
+                }
+            }
+        }
+        
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new MinimalPong();
+        });
+    </script>
+</body>
+</html>
