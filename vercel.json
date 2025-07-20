@@ -1,0 +1,12 @@
+{
+  "name": "minimal-pong-game",
+  "version": 2,
+  "public": true,
+  "functions": {},
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
