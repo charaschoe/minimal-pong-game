@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PONG</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Crimson+Pro:wght@300;400;500&display=swap');
         
@@ -308,6 +309,193 @@
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(180deg); }
         }
+        
+        /* Supabase Leaderboard Styles */
+        #gameEndScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(254, 254, 254, 0.96);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            backdrop-filter: blur(4px);
+        }
+        
+        #gameEndTitle {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: #2A2926;
+            margin-bottom: 1rem;
+            letter-spacing: 0.3rem;
+        }
+        
+        #finalScore {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #6B6762;
+            margin-bottom: 2rem;
+            letter-spacing: 0.1rem;
+        }
+        
+        #playerNameForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        #playerNameInput {
+            background: #FEFEFE;
+            border: 2px solid #E8E3DD;
+            padding: 0.75rem 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 300;
+            color: #2A2926;
+            text-align: center;
+            letter-spacing: 0.05rem;
+            outline: none;
+            min-width: 200px;
+            transition: border-color 0.2s ease;
+        }
+        
+        #playerNameInput:focus {
+            border-color: #C8B9A5;
+        }
+        
+        #playerNameInput::placeholder {
+            color: #9C8676;
+        }
+        
+        #submitScoreBtn {
+            background: #2A2926;
+            color: #FEFEFE;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            margin: 0.25rem;
+        }
+        
+        #submitScoreBtn:hover {
+            background: #3A3935;
+        }
+        
+        #submitScoreBtn:disabled {
+            background: #C8B9A5;
+            cursor: not-allowed;
+        }
+        
+        #leaderboardScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #FEFEFE;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 20;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        #leaderboardTitle {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: #2A2926;
+            margin-bottom: 2rem;
+            letter-spacing: 0.3rem;
+            position: relative;
+        }
+        
+        #leaderboardTitle::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #C8B9A5, #9C8676);
+        }
+        
+        #leaderboardList {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 2rem;
+            background: rgba(249, 247, 245, 0.5);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #E8E3DD;
+            font-family: 'Inter', sans-serif;
+            font-weight: 300;
+        }
+        
+        .leaderboard-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .leaderboard-rank {
+            font-size: 0.9rem;
+            color: #9C8676;
+            width: 2rem;
+            font-weight: 400;
+        }
+        
+        .leaderboard-name {
+            font-size: 1rem;
+            color: #2A2926;
+            flex: 1;
+            text-align: left;
+            margin-left: 1rem;
+        }
+        
+        .leaderboard-score {
+            font-size: 1rem;
+            color: #2A2926;
+            letter-spacing: 0.1rem;
+        }
+        
+        #backToGameBtn {
+            background: #6B6762;
+            color: #FEFEFE;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        
+        #backToGameBtn:hover {
+            background: #3A3935;
+        }
     </style>
 </head>
 <body>
@@ -341,6 +529,7 @@
                 Player 2: ↑ / ↓<br>
                 Press P to pause
             </div>
+            <button class="game-button secondary" id="viewLeaderboardBtn">Leaderboard</button>
         </div>
         
         <div id="pauseScreen" class="hidden">
@@ -354,8 +543,28 @@
             <button class="game-button" id="playAgainButton">Play Again</button>
             <button class="game-button secondary" id="menuButton">Menu</button>
         </div>
+        
+        <div id="gameEndScreen" class="hidden">
+            <div id="gameEndTitle">Victory!</div>
+            <div id="finalScore"></div>
+            <div id="playerNameForm">
+                <input type="text" id="playerNameInput" placeholder="Enter winner's name" maxlength="20">
+                <button id="submitScoreBtn">Save to Leaderboard</button>
+            </div>
+            <div>
+                <button class="game-button" id="playAgainFromEndBtn">Play Again</button>
+                <button class="game-button secondary" id="viewLeaderboardFromEndBtn">View Leaderboard</button>
+            </div>
+        </div>
+        
+        <div id="leaderboardScreen" class="hidden">
+            <div id="leaderboardTitle">Leaderboard</div>
+            <div id="leaderboardList"></div>
+            <button id="backToGameBtn">Back to Game</button>
+        </div>
     </div>
 
+    <script src="supabase-config.js"></script>
     <script>
         class MinimalPong {
             constructor() {
@@ -364,10 +573,19 @@
                 this.startScreen = document.getElementById('startScreen');
                 this.pauseScreen = document.getElementById('pauseScreen');
                 this.gameOverScreen = document.getElementById('gameOverScreen');
+                this.gameEndScreen = document.getElementById('gameEndScreen');
+                this.leaderboardScreen = document.getElementById('leaderboardScreen');
                 this.scoreDisplay = document.getElementById('scoreDisplay');
                 this.speedDisplay = document.getElementById('speedDisplay');
                 this.rallyDisplay = document.getElementById('rallyDisplay');
                 this.winnerDisplay = document.getElementById('winner');
+                this.finalScore = document.getElementById('finalScore');
+                this.playerNameInput = document.getElementById('playerNameInput');
+                this.submitScoreBtn = document.getElementById('submitScoreBtn');
+                this.leaderboardList = document.getElementById('leaderboardList');
+                
+                // Initialize Supabase manager
+                this.supabaseManager = new SupabaseManager();
                 
                 // Nordic-inspired color palette
                 this.colors = {
@@ -389,6 +607,9 @@
                 this.rally = 0;
                 this.gameSpeed = 1.0;
                 this.lastBallHit = 0;
+                this.gameStartTime = null;
+                this.gameDuration = null;
+                this.currentWinner = null;
                 
                 // Sound effects (using Web Audio API)
                 this.audioContext = null;
@@ -503,6 +724,13 @@
                 document.getElementById('playAgainButton').addEventListener('click', () => this.restartGame());
                 document.getElementById('menuButton').addEventListener('click', () => this.showMenu());
                 
+                // Leaderboard buttons
+                document.getElementById('viewLeaderboardBtn').addEventListener('click', () => this.showLeaderboard());
+                document.getElementById('playAgainFromEndBtn').addEventListener('click', () => this.restartGame());
+                document.getElementById('viewLeaderboardFromEndBtn').addEventListener('click', () => this.showLeaderboard());
+                document.getElementById('submitScoreBtn').addEventListener('click', () => this.saveScore());
+                document.getElementById('backToGameBtn').addEventListener('click', () => this.showMenu());
+                
                 document.addEventListener('keydown', (e) => {
                     this.keys[e.key] = true;
                     
@@ -523,10 +751,21 @@
                             this.resumeGame();
                         }
                     }
+                    
+                    if (e.key === 'Enter' && this.gameState === 'gameEnd') {
+                        this.saveScore();
+                    }
                 });
                 
                 document.addEventListener('keyup', (e) => {
                     this.keys[e.key] = false;
+                });
+                
+                // Player name input handling
+                this.playerNameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.saveScore();
+                    }
                 });
                 
                 // Initialize button states
@@ -573,6 +812,9 @@
                 this.startScreen.classList.add('hidden');
                 this.pauseScreen.classList.add('hidden');
                 this.gameOverScreen.classList.add('hidden');
+                this.gameEndScreen.classList.add('hidden');
+                this.leaderboardScreen.classList.add('hidden');
+                this.gameStartTime = Date.now();
                 this.initGame();
                 this.gameLoop();
             }
@@ -598,15 +840,97 @@
                 this.startScreen.classList.remove('hidden');
                 this.pauseScreen.classList.add('hidden');
                 this.gameOverScreen.classList.add('hidden');
+                this.gameEndScreen.classList.add('hidden');
+                this.leaderboardScreen.classList.add('hidden');
             }
             
             gameOver(winner) {
-                this.gameState = 'gameOver';
-                this.winnerDisplay.textContent = winner === 'left' ? 
+                this.gameState = 'gameEnd';
+                this.gameDuration = Date.now() - this.gameStartTime;
+                this.currentWinner = winner;
+                
+                const winnerText = winner === 'left' ? 
                     (this.gameMode === 'ai' ? 'You Win!' : 'Player 1 Wins!') : 
                     (this.gameMode === 'ai' ? 'AI Wins!' : 'Player 2 Wins!');
-                this.gameOverScreen.classList.remove('hidden');
+                
+                const winnerScore = winner === 'left' ? this.leftPaddle.score : this.rightPaddle.score;
+                const loserScore = winner === 'left' ? this.rightPaddle.score : this.leftPaddle.score;
+                
+                this.finalScore.textContent = `${winnerText} ${winnerScore} — ${loserScore}`;
+                this.playerNameInput.value = '';
+                this.playerNameInput.placeholder = `Enter ${winner === 'left' ? 
+                    (this.gameMode === 'ai' ? 'your' : "Player 1's") : 
+                    (this.gameMode === 'ai' ? "AI's" : "Player 2's")} name`;
+                
+                this.gameEndScreen.classList.remove('hidden');
                 this.playSound(winner === 'left' ? 523 : 330, 0.5);
+                
+                // Focus the input for better UX
+                setTimeout(() => this.playerNameInput.focus(), 100);
+            }
+            
+            async saveScore() {
+                const playerName = this.playerNameInput.value.trim();
+                if (!playerName) {
+                    this.playerNameInput.focus();
+                    return;
+                }
+                
+                this.submitScoreBtn.disabled = true;
+                this.submitScoreBtn.textContent = 'Saving...';
+                
+                const winnerScore = this.currentWinner === 'left' ? this.leftPaddle.score : this.rightPaddle.score;
+                const loserScore = this.currentWinner === 'left' ? this.rightPaddle.score : this.leftPaddle.score;
+                const durationInSeconds = Math.round(this.gameDuration / 1000);
+                
+                const success = await this.supabaseManager.saveScore(
+                    playerName, 
+                    winnerScore, 
+                    loserScore, 
+                    `${durationInSeconds} seconds`
+                );
+                
+                this.submitScoreBtn.disabled = false;
+                this.submitScoreBtn.textContent = success ? 'Score Saved!' : 'Save to Leaderboard';
+                
+                if (success) {
+                    setTimeout(() => {
+                        this.submitScoreBtn.textContent = 'Save to Leaderboard';
+                        this.showLeaderboard();
+                    }, 1000);
+                }
+            }
+            
+            async showLeaderboard() {
+                this.gameState = 'leaderboard';
+                this.startScreen.classList.add('hidden');
+                this.gameEndScreen.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                this.pauseScreen.classList.add('hidden');
+                this.leaderboardScreen.classList.remove('hidden');
+                
+                this.leaderboardList.innerHTML = '<div style="text-align: center; color: #6B6762; padding: 2rem;">Loading...</div>';
+                
+                const leaderboard = await this.supabaseManager.getLeaderboard(10);
+                this.displayLeaderboard(leaderboard);
+            }
+            
+            displayLeaderboard(leaderboard) {
+                if (leaderboard.length === 0) {
+                    this.leaderboardList.innerHTML = '<div style="text-align: center; color: #6B6762; padding: 2rem;">No scores yet. Be the first to play!</div>';
+                    return;
+                }
+                
+                this.leaderboardList.innerHTML = leaderboard.map((entry, index) => {
+                    const date = new Date(entry.created_at).toLocaleDateString();
+                    return `
+                        <div class="leaderboard-entry">
+                            <div class="leaderboard-rank">${index + 1}</div>
+                            <div class="leaderboard-name">${entry.player_name}</div>
+                            <div class="leaderboard-score">${entry.player_score} — ${entry.opponent_score}</div>
+                        </div>
+                    `;
+                }).join('');
             }
             
             update() {
