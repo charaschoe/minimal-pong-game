@@ -6,7 +6,7 @@
     <title>PONG</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Crimson+Pro:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
         
         * {
             margin: 0;
@@ -15,68 +15,29 @@
         }
         
         body {
-            background: #F4F2F0;
-            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #2A2926;
+            color: #000000;
             position: relative;
-        }
-        
-        /* Nordic-inspired background pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 40%, rgba(200, 185, 165, 0.03) 50%, transparent 60%),
-                        linear-gradient(-45deg, transparent 40%, rgba(156, 134, 118, 0.02) 50%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
         }
         
         #gameContainer {
             position: relative;
-            background: #FEFEFE;
-            border: 2px solid #E8E3DD;
-            box-shadow: 0 8px 32px rgba(42, 41, 38, 0.12);
+            background: #FFFFFF;
+            border: 2px solid #000000;
             max-width: 90vmin;
             aspect-ratio: 2/1;
             z-index: 1;
             overflow: hidden;
         }
         
-        /* Nordic quatrefoil corner accents */
-        #gameContainer::before,
-        #gameContainer::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #C8B9A5;
-            opacity: 0.6;
-            z-index: 2;
-        }
-        
-        #gameContainer::before {
-            top: 16px;
-            left: 16px;
-            clip-path: circle(50% at 50% 50%);
-        }
-        
-        #gameContainer::after {
-            bottom: 16px;
-            right: 16px;
-            clip-path: circle(50% at 50% 50%);
-        }
-        
         #gameCanvas {
             display: block;
-            background: #FEFEFE;
+            background: #FFFFFF;
             width: 100%;
             height: 100%;
         }
@@ -87,12 +48,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #FEFEFE 0%, #F9F7F5 100%);
+            background: #FFFFFF;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
+            padding: 3rem;
         }
         
         #gameOverScreen {
@@ -101,13 +63,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(254, 254, 254, 0.96);
+            background: #FFFFFF;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
-            backdrop-filter: blur(4px);
+            padding: 3rem;
         }
         
         #pauseScreen {
@@ -116,88 +78,159 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(254, 254, 254, 0.94);
+            background: #FFFFFF;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
-            backdrop-filter: blur(6px);
+            padding: 3rem;
         }
         
         #title {
-            font-family: 'Crimson Pro', serif;
-            font-size: 3.5rem;
-            font-weight: 300;
-            color: #2A2926;
-            margin-bottom: 3rem;
-            letter-spacing: 0.4rem;
-            position: relative;
-        }
-        
-        /* Nordic-inspired title accent */
-        #title::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, #C8B9A5, #9C8676);
-        }
-        
-        .game-button {
-            background: #2A2926;
-            color: #FEFEFE;
-            border: none;
-            padding: 1rem 2.5rem;
             font-family: 'Inter', sans-serif;
-            font-size: 1rem;
+            font-size: 4rem;
+            font-weight: 200;
+            color: #000000;
+            margin-bottom: 4rem;
+            letter-spacing: 0.5rem;
+            text-align: center;
+        }
+        
+        /* Braun/TE Inspired Control Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            margin-bottom: 4rem;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .control-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #000000;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0;
+            border: 1px solid #000000;
+        }
+        
+        .toggle-button {
+            background: #FFFFFF;
+            color: #000000;
+            border: none;
+            border-right: 1px solid #000000;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
             font-weight: 400;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.1s ease;
+            letter-spacing: 0.05rem;
+            min-width: 60px;
+        }
+        
+        .toggle-button:last-child {
+            border-right: none;
+        }
+        
+        .toggle-button:hover {
+            background: #F5F5F5;
+        }
+        
+        .toggle-button:active {
+            background: #E0E0E0;
+        }
+        
+        .toggle-button.active {
+            background: #000000;
+            color: #FFFFFF;
+        }
+        
+        .toggle-button.active:hover {
+            background: #333333;
+        }
+        
+        /* Primary Start Button */
+        .start-button {
+            background: #000000;
+            color: #FFFFFF;
+            border: none;
+            padding: 1.25rem 3rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            letter-spacing: 0.2rem;
             text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+        
+        .start-button:hover {
+            background: #333333;
+        }
+        
+        .start-button:active {
+            background: #000000;
+            transform: scale(0.98);
+        }
+        
+        /* Secondary Button */
+        .secondary-button {
+            background: #FFFFFF;
+            color: #000000;
+            border: 1px solid #000000;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s ease;
             letter-spacing: 0.1rem;
-            margin: 0.6rem;
-            position: relative;
-            overflow: hidden;
+            text-transform: uppercase;
         }
         
-        .game-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(200, 185, 165, 0.2), transparent);
-            transition: left 0.5s ease;
+        .secondary-button:hover {
+            background: #F5F5F5;
         }
         
-        .game-button:hover::before {
-            left: 100%;
+        .secondary-button:active {
+            background: #E0E0E0;
         }
         
-        .game-button:hover {
-            background: #3A3935;
-            box-shadow: 0 4px 16px rgba(42, 41, 38, 0.2);
+        .menu-footer {
+            margin-bottom: 2rem;
         }
         
-        .game-button:active {
-            background: #1A1918;
-            transform: translateY(1px);
+        /* Control Info */
+        .control-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
         }
         
-        .game-button.secondary {
-            background: transparent;
-            color: #2A2926;
-            border: 2px solid #E8E3DD;
-        }
-        
-        .game-button.secondary:hover {
-            background: #F9F7F5;
-            border-color: #C8B9A5;
+        .info-line {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 300;
+            color: #666666;
+            letter-spacing: 0.05rem;
         }
         
         #scoreDisplay {
@@ -264,51 +297,9 @@
             display: none !important;
         }
         
-        .option-group {
-            margin-bottom: 2.5rem;
-        }
+
         
-        .option-label {
-            font-size: 0.95rem;
-            font-weight: 400;
-            color: #6B6762;
-            margin-bottom: 1.2rem;
-            letter-spacing: 0.05rem;
-            text-transform: uppercase;
-        }
-        
-        /* Nordic-inspired decorative elements */
-        .nordic-accent {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #C8B9A5;
-            border-radius: 50%;
-            opacity: 0.4;
-        }
-        
-        .nordic-accent:nth-child(1) {
-            top: 10%;
-            left: 15%;
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .nordic-accent:nth-child(2) {
-            top: 20%;
-            right: 20%;
-            animation: float 8s ease-in-out infinite reverse;
-        }
-        
-        .nordic-accent:nth-child(3) {
-            bottom: 15%;
-            left: 25%;
-            animation: float 7s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(180deg); }
-        }
+
         
         /* Supabase Leaderboard Styles */
         #gameEndScreen {
@@ -479,29 +470,11 @@
             letter-spacing: 0.1rem;
         }
         
-        #backToGameBtn {
-            background: #6B6762;
-            color: #FEFEFE;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 400;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.1rem;
-        }
-        
-        #backToGameBtn:hover {
-            background: #3A3935;
-        }
+
     </style>
 </head>
 <body>
-    <div class="nordic-accent"></div>
-    <div class="nordic-accent"></div>
-    <div class="nordic-accent"></div>
+
     
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
@@ -513,35 +486,49 @@
         
         <div id="startScreen">
             <div id="title">PONG</div>
-            <div id="gameMode">
-                <div class="option-label">Game Mode</div>
-                <button class="game-button" id="twoPlayerButton">Two Player</button>
-                <button class="game-button secondary" id="aiButton">vs AI</button>
+            
+            <div class="control-panel">
+                <div class="control-section">
+                    <div class="control-label">MODE</div>
+                    <div class="button-group">
+                        <button class="toggle-button active" id="twoPlayerButton" data-value="twoPlayer">2P</button>
+                        <button class="toggle-button" id="aiButton" data-value="ai">AI</button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-label">SCORE</div>
+                    <div class="button-group">
+                        <button class="toggle-button" id="score5" data-value="5">05</button>
+                        <button class="toggle-button active" id="score10" data-value="10">10</button>
+                        <button class="toggle-button" id="score15" data-value="15">15</button>
+                    </div>
+                </div>
             </div>
-            <div class="option-group">
-                <div class="option-label">First to Score</div>
-                <button class="game-button secondary" id="score5">5</button>
-                <button class="game-button" id="score10">10</button>
-                <button class="game-button secondary" id="score15">15</button>
+            
+            <button class="start-button" id="startGameBtn">START</button>
+            
+            <div class="menu-footer">
+                <button class="secondary-button" id="viewLeaderboardBtn">LEADERBOARD</button>
             </div>
-            <div id="instructions">
-                Player 1: W / S<br>
-                Player 2: ↑ / ↓<br>
-                Press P to pause
+            
+            <div class="control-info">
+                <div class="info-line">P1: W/S</div>
+                <div class="info-line">P2: ↑/↓</div>
+                <div class="info-line">PAUSE: P</div>
             </div>
-            <button class="game-button secondary" id="viewLeaderboardBtn">Leaderboard</button>
         </div>
         
         <div id="pauseScreen" class="hidden">
             <div id="title">PAUSED</div>
-            <button class="game-button" id="resumeButton">Resume</button>
-            <button class="game-button secondary" id="restartButton">Restart</button>
+            <button class="start-button" id="resumeButton">RESUME</button>
+            <button class="secondary-button" id="restartButton">RESTART</button>
         </div>
         
         <div id="gameOverScreen" class="hidden">
             <div id="winner">Player 1 Wins!</div>
-            <button class="game-button" id="playAgainButton">Play Again</button>
-            <button class="game-button secondary" id="menuButton">Menu</button>
+            <button class="start-button" id="playAgainButton">PLAY AGAIN</button>
+            <button class="secondary-button" id="menuButton">MENU</button>
         </div>
         
         <div id="gameEndScreen" class="hidden">
@@ -552,15 +539,15 @@
                 <button id="submitScoreBtn">Save to Leaderboard</button>
             </div>
             <div>
-                <button class="game-button" id="playAgainFromEndBtn">Play Again</button>
-                <button class="game-button secondary" id="viewLeaderboardFromEndBtn">View Leaderboard</button>
+                <button class="start-button" id="playAgainFromEndBtn">PLAY AGAIN</button>
+                <button class="secondary-button" id="viewLeaderboardFromEndBtn">VIEW LEADERBOARD</button>
             </div>
         </div>
         
         <div id="leaderboardScreen" class="hidden">
             <div id="leaderboardTitle">Leaderboard</div>
             <div id="leaderboardList"></div>
-            <button id="backToGameBtn">Back to Game</button>
+            <button class="secondary-button" id="backToGameBtn">BACK TO GAME</button>
         </div>
     </div>
 
@@ -587,14 +574,13 @@
                 // Initialize Supabase manager
                 this.supabaseManager = new SupabaseManager();
                 
-                // Nordic-inspired color palette
+                // Braun/TE-inspired color palette
                 this.colors = {
-                    primary: '#2A2926',
-                    secondary: '#6B6762',
-                    background: '#FEFEFE',
-                    accent: '#C8B9A5',
-                    warm: '#9C8676',
-                    light: '#F9F7F5'
+                    primary: '#000000',
+                    secondary: '#666666',
+                    background: '#FFFFFF',
+                    accent: '#333333',
+                    light: '#F5F5F5'
                 };
                 
                 this.gameState = 'start';
@@ -691,31 +677,34 @@
             }
             
             bindEvents() {
-                // Start screen buttons
+                // Start button
+                document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
+                
+                // Mode toggle buttons
                 document.getElementById('twoPlayerButton').addEventListener('click', () => {
                     this.gameMode = 'twoPlayer';
-                    this.updateModeButtons();
+                    this.updateToggleButtons('mode', 'twoPlayerButton');
                 });
                 
                 document.getElementById('aiButton').addEventListener('click', () => {
                     this.gameMode = 'ai';
-                    this.updateModeButtons();
+                    this.updateToggleButtons('mode', 'aiButton');
                 });
                 
-                // Score buttons
+                // Score toggle buttons
                 document.getElementById('score5').addEventListener('click', () => {
                     this.winningScore = 5;
-                    this.updateScoreButtons();
+                    this.updateToggleButtons('score', 'score5');
                 });
                 
                 document.getElementById('score10').addEventListener('click', () => {
                     this.winningScore = 10;
-                    this.updateScoreButtons();
+                    this.updateToggleButtons('score', 'score10');
                 });
                 
                 document.getElementById('score15').addEventListener('click', () => {
                     this.winningScore = 15;
-                    this.updateScoreButtons();
+                    this.updateToggleButtons('score', 'score15');
                 });
                 
                 // Game control buttons
@@ -769,38 +758,21 @@
                 });
                 
                 // Initialize button states
-                this.updateModeButtons();
-                this.updateScoreButtons();
+                this.updateToggleButtons('mode', 'twoPlayerButton');
+                this.updateToggleButtons('score', 'score10');
             }
             
-            updateModeButtons() {
-                const twoPlayerBtn = document.getElementById('twoPlayerButton');
-                const aiBtn = document.getElementById('aiButton');
-                
-                if (this.gameMode === 'twoPlayer') {
-                    twoPlayerBtn.classList.remove('secondary');
-                    aiBtn.classList.add('secondary');
-                } else {
-                    twoPlayerBtn.classList.add('secondary');
-                    aiBtn.classList.remove('secondary');
+            updateToggleButtons(group, activeId) {
+                if (group === 'mode') {
+                    document.getElementById('twoPlayerButton').classList.remove('active');
+                    document.getElementById('aiButton').classList.remove('active');
+                    document.getElementById(activeId).classList.add('active');
+                } else if (group === 'score') {
+                    document.getElementById('score5').classList.remove('active');
+                    document.getElementById('score10').classList.remove('active');
+                    document.getElementById('score15').classList.remove('active');
+                    document.getElementById(activeId).classList.add('active');
                 }
-            }
-            
-            updateScoreButtons() {
-                const buttons = [
-                    { id: 'score5', value: 5 },
-                    { id: 'score10', value: 10 },
-                    { id: 'score15', value: 15 }
-                ];
-                
-                buttons.forEach(btn => {
-                    const element = document.getElementById(btn.id);
-                    if (btn.value === this.winningScore) {
-                        element.classList.remove('secondary');
-                    } else {
-                        element.classList.add('secondary');
-                    }
-                });
             }
             
             startGame() {
