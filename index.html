@@ -29,8 +29,10 @@
             position: relative;
             background: #FFFFFF;
             border: 2px solid #000000;
-            max-width: 90vmin;
-            aspect-ratio: 2/1;
+            width: 90vmin;
+            height: 45vmin;
+            max-width: 95vw;
+            max-height: 95vh;
             z-index: 1;
             overflow: hidden;
         }
@@ -49,12 +51,46 @@
             right: 0;
             bottom: 0;
             background: #FFFFFF;
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            padding: 1.5rem 1rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+            width: 100%;
+            height: 100%;
+            pointer-events: auto;
+        }
+        
+        .menu-top {
+            flex: 0 0 auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .menu-center {
+            flex: 1 1 auto;
+            width: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
-            padding: 3rem;
+            gap: 1.5rem;
+            min-height: 0;
+        }
+        
+        .menu-bottom {
+            flex: 0 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
         }
         
         #gameOverScreen {
@@ -89,22 +125,21 @@
         
         #title {
             font-family: 'Inter', sans-serif;
-            font-size: 4rem;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
             font-weight: 200;
             color: #000000;
-            margin-bottom: 4rem;
-            letter-spacing: 0.5rem;
+            letter-spacing: 0.2rem;
             text-align: center;
+            margin: 0;
         }
         
         /* Braun/TE Inspired Control Panel */
         .control-panel {
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
-            margin-bottom: 4rem;
+            gap: 1.2rem;
             width: 100%;
-            max-width: 300px;
+            max-width: 260px;
         }
         
         .control-section {
@@ -127,6 +162,9 @@
             display: flex;
             gap: 0;
             border: 1px solid #000000;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
         }
         
         .toggle-button {
@@ -134,14 +172,18 @@
             color: #000000;
             border: none;
             border-right: 1px solid #000000;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 400;
             cursor: pointer;
             transition: all 0.1s ease;
             letter-spacing: 0.05rem;
-            min-width: 60px;
+            min-width: 50px;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
         }
         
         .toggle-button:last-child {
@@ -170,15 +212,17 @@
             background: #000000;
             color: #FFFFFF;
             border: none;
-            padding: 1.25rem 3rem;
+            padding: 0.9rem 2.2rem;
             font-family: 'Inter', sans-serif;
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.1s ease;
-            letter-spacing: 0.2rem;
+            letter-spacing: 0.12rem;
             text-transform: uppercase;
-            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
         }
         
         .start-button:hover {
@@ -195,14 +239,17 @@
             background: #FFFFFF;
             color: #000000;
             border: 1px solid #000000;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 400;
             cursor: pointer;
             transition: all 0.1s ease;
-            letter-spacing: 0.1rem;
+            letter-spacing: 0.08rem;
             text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
         }
         
         .secondary-button:hover {
@@ -213,24 +260,21 @@
             background: #E0E0E0;
         }
         
-        .menu-footer {
-            margin-bottom: 2rem;
-        }
-        
         /* Control Info */
         .control-info {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.2rem;
         }
         
         .info-line {
             font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             font-weight: 300;
-            color: #666666;
-            letter-spacing: 0.05rem;
+            color: #888888;
+            letter-spacing: 0.02rem;
+            text-align: center;
         }
         
         #scoreDisplay {
@@ -299,9 +343,66 @@
         
 
         
-
         
-        /* Supabase Leaderboard Styles */
+        /* Mobile Responsiveness */
+        @media (max-height: 500px) {
+            #startScreen {
+                padding: 1rem 0.8rem;
+            }
+            
+            #title {
+                font-size: clamp(1.4rem, 4vw, 2rem);
+                letter-spacing: 0.1rem;
+            }
+            
+            .menu-center {
+                gap: 1rem;
+            }
+            
+            .control-panel {
+                gap: 0.8rem;
+                max-width: 240px;
+            }
+            
+            .control-label {
+                font-size: 0.65rem;
+                margin-bottom: 0.6rem;
+            }
+            
+            .toggle-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+                min-width: 45px;
+            }
+            
+            .start-button {
+                padding: 0.7rem 1.8rem;
+                font-size: 0.8rem;
+                letter-spacing: 0.1rem;
+            }
+            
+            .secondary-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.7rem;
+            }
+            
+            .info-line {
+                font-size: 0.55rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .control-panel {
+                max-width: 220px;
+            }
+            
+            .toggle-button {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.7rem;
+            }
+        }
+          
+          /* Supabase Leaderboard Styles */
         #gameEndScreen {
             position: absolute;
             top: 0;
@@ -485,37 +586,39 @@
         </div>
         
         <div id="startScreen">
-            <div id="title">PONG</div>
+            <div class="menu-top">
+                <div id="title">PONG</div>
+            </div>
             
-            <div class="control-panel">
-                <div class="control-section">
-                    <div class="control-label">MODE</div>
-                    <div class="button-group">
-                        <button class="toggle-button active" id="twoPlayerButton" data-value="twoPlayer">2P</button>
-                        <button class="toggle-button" id="aiButton" data-value="ai">AI</button>
+            <div class="menu-center">
+                <div class="control-panel">
+                    <div class="control-section">
+                        <div class="control-label">MODE</div>
+                        <div class="button-group">
+                            <button class="toggle-button active" id="twoPlayerButton" data-value="twoPlayer">2P</button>
+                            <button class="toggle-button" id="aiButton" data-value="ai">AI</button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-section">
+                        <div class="control-label">SCORE</div>
+                        <div class="button-group">
+                            <button class="toggle-button" id="score5" data-value="5">05</button>
+                            <button class="toggle-button active" id="score10" data-value="10">10</button>
+                            <button class="toggle-button" id="score15" data-value="15">15</button>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="control-section">
-                    <div class="control-label">SCORE</div>
-                    <div class="button-group">
-                        <button class="toggle-button" id="score5" data-value="5">05</button>
-                        <button class="toggle-button active" id="score10" data-value="10">10</button>
-                        <button class="toggle-button" id="score15" data-value="15">15</button>
-                    </div>
-                </div>
+                <button class="start-button" id="startGameBtn">START</button>
             </div>
             
-            <button class="start-button" id="startGameBtn">START</button>
-            
-            <div class="menu-footer">
+            <div class="menu-bottom">
                 <button class="secondary-button" id="viewLeaderboardBtn">LEADERBOARD</button>
-            </div>
-            
-            <div class="control-info">
-                <div class="info-line">P1: W/S</div>
-                <div class="info-line">P2: ↑/↓</div>
-                <div class="info-line">PAUSE: P</div>
+                
+                <div class="control-info">
+                    <div class="info-line">P1: W/S • P2: ↑/↓ • PAUSE: P</div>
+                </div>
             </div>
         </div>
         
@@ -601,8 +704,20 @@
                 this.audioContext = null;
                 this.initAudio();
                 
+                // Debug logging
+                console.log('Constructor elements check:');
+                console.log('- Start button:', document.getElementById('startGameBtn'));
+                console.log('- Two Player button:', document.getElementById('twoPlayerButton'));
+                console.log('- AI button:', document.getElementById('aiButton'));
+                console.log('- Score buttons:', [
+                    document.getElementById('score5'),
+                    document.getElementById('score10'),
+                    document.getElementById('score15')
+                ]);
+                
                 this.initGame();
                 this.bindEvents();
+                console.log('MinimalPong constructor completed.');
             }
             
             initAudio() {
@@ -677,35 +792,76 @@
             }
             
             bindEvents() {
-                // Start button
-                document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
+                // Start button with debug
+                const startBtn = document.getElementById('startGameBtn');
+                if (startBtn) {
+                    const handleStartClick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Start button clicked!');
+                        this.startGame();
+                    };
+                    
+                    startBtn.addEventListener('click', handleStartClick);
+                    startBtn.addEventListener('touchstart', handleStartClick);
+                }
                 
-                // Mode toggle buttons
-                document.getElementById('twoPlayerButton').addEventListener('click', () => {
-                    this.gameMode = 'twoPlayer';
-                    this.updateToggleButtons('mode', 'twoPlayerButton');
-                });
+                // Mode toggle buttons with debug
+                const twoPlayerBtn = document.getElementById('twoPlayerButton');
+                if (twoPlayerBtn) {
+                    twoPlayerBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Two Player button clicked!');
+                        this.gameMode = 'twoPlayer';
+                        this.updateToggleButtons('mode', 'twoPlayerButton');
+                    });
+                }
                 
-                document.getElementById('aiButton').addEventListener('click', () => {
-                    this.gameMode = 'ai';
-                    this.updateToggleButtons('mode', 'aiButton');
-                });
+                const aiBtn = document.getElementById('aiButton');
+                if (aiBtn) {
+                    aiBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('AI button clicked!');
+                        this.gameMode = 'ai';
+                        this.updateToggleButtons('mode', 'aiButton');
+                    });
+                }
                 
-                // Score toggle buttons
-                document.getElementById('score5').addEventListener('click', () => {
-                    this.winningScore = 5;
-                    this.updateToggleButtons('score', 'score5');
-                });
+                // Score toggle buttons with debug
+                const score5Btn = document.getElementById('score5');
+                if (score5Btn) {
+                    score5Btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Score 5 button clicked!');
+                        this.winningScore = 5;
+                        this.updateToggleButtons('score', 'score5');
+                    });
+                }
                 
-                document.getElementById('score10').addEventListener('click', () => {
-                    this.winningScore = 10;
-                    this.updateToggleButtons('score', 'score10');
-                });
+                const score10Btn = document.getElementById('score10');
+                if (score10Btn) {
+                    score10Btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Score 10 button clicked!');
+                        this.winningScore = 10;
+                        this.updateToggleButtons('score', 'score10');
+                    });
+                }
                 
-                document.getElementById('score15').addEventListener('click', () => {
-                    this.winningScore = 15;
-                    this.updateToggleButtons('score', 'score15');
-                });
+                const score15Btn = document.getElementById('score15');
+                if (score15Btn) {
+                    score15Btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Score 15 button clicked!');
+                        this.winningScore = 15;
+                        this.updateToggleButtons('score', 'score15');
+                    });
+                }
                 
                 // Game control buttons
                 document.getElementById('resumeButton').addEventListener('click', () => this.resumeGame());
@@ -776,6 +932,8 @@
             }
             
             startGame() {
+                console.log('startGame() called!', 'Current state:', this.gameState);
+                
                 if (this.audioContext && this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
@@ -789,6 +947,8 @@
                 this.gameStartTime = Date.now();
                 this.initGame();
                 this.gameLoop();
+                
+                console.log('Game started successfully!');
             }
             
             pauseGame() {
@@ -1165,7 +1325,13 @@
         
         // Initialize game when page loads
         window.addEventListener('load', () => {
-            new MinimalPong();
+            console.log('Page loaded, initializing MinimalPong...');
+            try {
+                const game = new MinimalPong();
+                console.log('MinimalPong initialized successfully:', game);
+            } catch (error) {
+                console.error('Error initializing MinimalPong:', error);
+            }
         });
     </script>
 </body>
