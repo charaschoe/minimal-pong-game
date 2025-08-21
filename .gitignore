@@ -1,0 +1,21 @@
+# Test files
+test_*.html
+
+# Temporary files
+*.tmp
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Build artifacts
+dist/
+build/
+
+# Node modules (if ever added)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
