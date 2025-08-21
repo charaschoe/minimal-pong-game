@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data:;">
     <title>PONG</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- TODO: Add SRI integrity hash for production deployment -->
+    <!-- For Supabase CDN, generate hash with: curl -s https://unpkg.com/@supabase/supabase-js@2.X.X/dist/umd/supabase.js | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2" 
+            crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
         
@@ -841,10 +845,37 @@
                 setTimeout(() => this.playerNameInput.focus(), 100);
             }
             
+            validateAndSanitizePlayerName(name) {
+                // Remove potentially dangerous characters
+                let sanitized = name.trim().replace(/[<>\"'&]/g, '');
+                
+                // Ensure length constraints
+                if (sanitized.length === 0) {
+                    return null;
+                }
+                if (sanitized.length > 20) {
+                    sanitized = sanitized.substring(0, 20);
+                }
+                
+                // Basic pattern validation - allow letters, numbers, spaces, and basic punctuation
+                if (!/^[a-zA-Z0-9\s\-_.]+$/.test(sanitized)) {
+                    return null;
+                }
+                
+                return sanitized;
+            }
+            
             async saveScore() {
-                const playerName = this.playerNameInput.value.trim();
+                const rawPlayerName = this.playerNameInput.value.trim();
+                const playerName = this.validateAndSanitizePlayerName(rawPlayerName);
+                
                 if (!playerName) {
                     this.playerNameInput.focus();
+                    // Show error message if validation fails
+                    this.submitScoreBtn.textContent = 'Invalid name format';
+                    setTimeout(() => {
+                        this.submitScoreBtn.textContent = 'Save to Leaderboard';
+                    }, 2000);
                     return;
                 }
                 
@@ -887,6 +918,15 @@
                 this.displayLeaderboard(leaderboard);
             }
             
+            escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+            
             displayLeaderboard(leaderboard) {
                 if (leaderboard.length === 0) {
                     this.leaderboardList.innerHTML = '<div style="text-align: center; color: #6B6762; padding: 2rem;">No scores yet. Be the first to play!</div>';
@@ -898,7 +938,7 @@
                     return `
                         <div class="leaderboard-entry">
                             <div class="leaderboard-rank">${index + 1}</div>
-                            <div class="leaderboard-name">${entry.player_name}</div>
+                            <div class="leaderboard-name">${this.escapeHtml(entry.player_name)}</div>
                             <div class="leaderboard-score">${entry.player_score} — ${entry.opponent_score}</div>
                         </div>
                     `;

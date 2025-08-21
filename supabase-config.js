@@ -3,10 +3,10 @@
 
 class SupabaseManager {
     constructor() {
-        // These would typically come from environment variables
-        // For now, they need to be set when deploying to production
-        this.supabaseUrl = window.SUPABASE_URL || 'http://localhost:54321';
-        this.supabaseKey = window.SUPABASE_ANON_KEY || 'your-anon-key-here';
+        // Get configuration from environment variables or window globals
+        // Remove fallback credentials for security
+        this.supabaseUrl = window.SUPABASE_URL;
+        this.supabaseKey = window.SUPABASE_ANON_KEY;
         this.supabase = null;
         this.isConnected = false;
         
@@ -15,6 +15,12 @@ class SupabaseManager {
 
     async initSupabase() {
         try {
+            // Validate configuration
+            if (!this.supabaseUrl || !this.supabaseKey) {
+                console.warn('Supabase configuration missing. Leaderboard features disabled.');
+                return;
+            }
+            
             // Load Supabase client from CDN
             if (typeof window.supabase === 'undefined') {
                 console.log('Loading Supabase client...');
